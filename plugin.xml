@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cordova-netease-nim"
+        version="1.0.0">
+    <name>Netease NIM</name>
+    <description>网易云信的Cordova插件</description>
+    <author>Huang Li</author>
+    <keywords>Nim,Cordova,云信</keywords>
+    <license>Apache 2.0 License</license>
+
+    <preference name="NIM_KEY" />
+
+    <engines>
+        <engine name="cordova" version=">=3.0"/>
+    </engines>
+     <js-module src="www/nim.js" name="NIM">
+            <clobbers target="plugins.nim"/>
+    </js-module>
+    <platform name="android"> 
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="NIM">
+                <param name="android-package" value="com.netease.nim.Nim"/>
+            </feature>
+        </config-file>
+        
+        <!--source code-->
+        <source-file src="src/android/Nim.java" target-dir="src/com/netease/nim"/>
+        <source-file src="src/android/NimApplication.java" target-dir="src/com/netease/nim"/>
+        <source-file src="src/android/Preferences.java" target-dir="src/com/netease/nim"/>
+        <source-file src="src/android/SystemUtil.java" target-dir="src/com/netease/nim"/>
+         <!-- libs -->
+        <source-file src="src/android/libs/nim-sdk-2.0.0.jar" target-dir="libs"/>
+        <source-file src="src/android/libs/cosinesdk.jar" target-dir="libs"/>
+        <source-file src="src/android/libs/armeabi/libcosine.so" target-dir="libs/armeabi"/>
+        <source-file src="src/android/libs/armeabi/libne_audio.so" target-dir="libs/armeabi"/>
+        <source-file src="src/android/libs/armeabi-v7a/libcosine.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/android/libs/armeabi-v7a/libne_audio.so" target-dir="libs/armeabi-v7a"/>
+        <source-file src="src/android/libs/x86/libcosine.so" target-dir="libs/x86"/>
+        <source-file src="src/android/libs/x86/libne_audio.so" target-dir="libs/x86"/>
+        <!--AndroidMainfest.xml-->
+        
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <!-- 权限声明 -->
+            <!-- 访问网络状态-->
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+            <!-- 控制呼吸灯，振动器等，用于新消息提醒 -->
+            <uses-permission android:name="android.permission.FLASHLIGHT" />
+            <uses-permission android:name="android.permission.VIBRATE" />
+            <!-- 外置存储存取权限 -->
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+            <!-- 多媒体相关 -->
+            <uses-permission android:name="android.permission.CAMERA"/>
+            <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+            <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+            <!-- 如果需要实时音视频通话模块，下面的权限也是必须的。否则，可以不加 -->
+            <uses-permission android:name="android.permission.BLUETOOTH" />
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+            <permission
+                android:name="$PACKAGE_NAME.permission.RECEIVE_MSG"
+                android:protectionLevel="signature"/>
+             <uses-permission android:name="$PACKAGE_NAME.permission.RECEIVE_MSG"/>
+        </config-file>
+        
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <meta-data android:name="com.netease.nim.appKey" android:value="$NIM_KEY" />
+            <!-- 声明云信后台服务，如需保持后台推送，使用独立进程效果会更好。 -->
+            <service 
+                android:name="com.netease.nimlib.service.NimService"
+                android:process=":core"/>
+
+            <service
+                android:name="com.netease.nimlib.service.NimService$Aux"
+                android:process=":core"/>
+
+            <!-- 云信SDK的监视系统启动和网络变化的广播接收器，用户开机自启动以及网络变化时候重新登录，
+                保持和 NimService 同一进程 -->
+            <receiver android:name="com.netease.nimlib.service.NimReceiver"
+                android:process=":core"
+                android:exported="false">
+                <intent-filter>
+                    <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                    <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                </intent-filter>
+            </receiver>
+
+            <!-- 云信进程间通信 Receiver -->
+            <receiver android:name="com.netease.nimlib.service.ResponseReceiver"/>
+
+            <!-- 安卓保活配置 -->
+            <service
+                android:name="com.netease.cosine.core.CosineService"
+                android:process=":cosine">
+            </service>
+
+            <receiver
+                android:name="com.netease.cosine.target.CosineReceiver"
+                android:exported="true"
+                android:process=":cosine">
+            </receiver>
+
+            <meta-data
+                android:name="com.netease.cosine.target"
+                android:value=""/>
+            <meta-data
+                android:name="com.netease.cosine.target.receiver"
+                android:value="com.netease.nimlib.service.NimReceiver"/>
+        </config-file>
+     </platform>
+</plugin>
