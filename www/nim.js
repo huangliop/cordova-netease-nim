@@ -9,6 +9,9 @@ module.exports = {
     },
     setNotification:function(b){
         exec(function(){},function(){},"NIM","setNotification",[b]);
+    },
+    moveToBack:function(){
+        exec(function(){},function(){},"NIM","moveToBack",[]);
     }
 };
 });
