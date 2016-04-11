@@ -42,6 +42,8 @@ public class Nim extends CordovaPlugin {
             }else {
                 callbackContext.error("Must have one parameters");
             }
+        }else if("moveToBack".equals(action)){//回到后台
+            cordova.getActivity().moveTaskToBack(true);
         }
 
         return true;
